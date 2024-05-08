@@ -14,10 +14,7 @@ source("data_loader.R")
 source("silhouette_calculator.R")
 
 # Cargar y preparar los datos
-dataClientesN <- load_and_prepare_data(file_path)
-
-# Datos de ejemplo
-data <- dataClientesN
+data <- load_and_prepare_data(file_path)
 
 
 
@@ -131,6 +128,7 @@ kmeans_result <- kmeans(data, centers = best_k)
 
 # Obtener los centroides de los grupos
 centroids <- kmeans_result$centers
+print(centroids)
 
 # Asignar las observaciones a los grupos correspondientes
 group_assignments <- kmeans_result$cluster
@@ -241,27 +239,9 @@ p_fuzzy <- ggplot(graph_data_fuzzy, aes(x = factor(K), y = FS, fill = Feature)) 
   theme(legend.position = "top")
 print(p_fuzzy)
 
-# Realizar el agrupamiento con K-means para el mejor valor de K
-best_k <- 2  
-
-# Realizar el agrupamiento K-means
-kmeans_result <- kmeans(data, centers = best_k)
+# Realizar el agrupamiento con Fuzzy K-means y el mejor K
+fuzzy_kmeans_result <- fanny(data, 2, memb.exp = 1.5)
 
 # Obtener los centroides de los grupos
-centroids <- kmeans_result$centers
-
-# Asignar las observaciones a los grupos correspondientes
-group_assignments <- kmeans_result$cluster
-
-# Crear un dataframe para almacenar los nombres de las aplicaciones y las asignaciones de grupos
-app_group_data <- data.frame(App = rownames(data), Group = group_assignments)
-
-# Imprimir los nombres de las aplicaciones en cada grupo
-for (i in 1:best_k) {
-  cat("Grupo", i, ":", "\n")
-  cat("Centroide:", centroids[i, ], "\n")
-  cat("Aplicaciones:", "\n")
-  apps_in_group <- app_group_data$app[app_group_data$Group == i]
-  cat(apps_in_group, "\n\n")
-}
-
+centroids <- tapply(data, fuzzy_kmeans_result$cluster, colMeans)
+print(centroids)
